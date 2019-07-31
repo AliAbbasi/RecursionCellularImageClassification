@@ -5,6 +5,8 @@ import random
 #----------------------------------------------------------------------------------------------------------------------
 
 def load_data_and_labels(train_path, valid_path, input_size):
+    print ("Train and validation data are loading ...!")
+    
     train_data_count  = 63676  
     valid_data_count  = 9354   
     
@@ -37,8 +39,8 @@ def get_batch_data(data, label, batch_size):
     batch, x, y = [], [], []  
     random_batch = []
     
-    for i in xrange(batch_size):  
-        rand_index = random.randint(0, data.shape[0])
+    for i in range(batch_size):  
+        rand_index = random.randint(0, data.shape[0]-1)
         
         cur_x = data[rand_index]
         cur_y = label[rand_index]
