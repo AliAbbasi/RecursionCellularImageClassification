@@ -1,11 +1,12 @@
 import keras
 import numpy as np
+import random
 
 #----------------------------------------------------------------------------------------------------------------------
 
 def load_data_and_labels(train_path, valid_path, input_size):
-    train_data_count  = 63676
-    valid_data_count  = 9354
+    train_data_count  = 63676  
+    valid_data_count  = 9354   
     
     train_data  = np.zeros(shape=(train_data_count, input_size[0], input_size[0], 6), dtype=np.float16)
     train_label = np.zeros(shape=(train_data_count, 1), dtype=np.float16)
@@ -24,18 +25,32 @@ def load_data_and_labels(train_path, valid_path, input_size):
     train_label = keras.utils.to_categorical(train_label, 1108)
     valid_label = keras.utils.to_categorical(valid_label, 1108)
     
-    ## shuffle the data
-    combined = list(zip(train_data, train_label))
-    random.shuffle(combined)
-    train_data, train_label = zip(*combined)
-    train_data  = np.asarray(train_data)
-    train_label = np.asarray(train_label)
-    
     ## normalize the data
     train_data = train_data/255.
     valid_data = valid_data/255. 
     
     return train_data, train_label, valid_data, valid_label
+    
+#----------------------------------------------------------------------------------------------------------------------
+
+def get_batch_data(data, label, batch_size):
+    batch, x, y = [], [], []  
+    random_batch = []
+    
+    for i in xrange(batch_size):  
+        rand_index = random.randint(0, data.shape[0])
+        
+        cur_x = data[rand_index]
+        cur_y = label[rand_index]
+        
+        ## TODO: add random aug here ...
+        x.append(cur_x)
+        y.append(cur_y) 
+        
+    x = np.asarray(x)
+    y = np.asarray(y)
+
+    return x, y
     
 #----------------------------------------------------------------------------------------------------------------------
 

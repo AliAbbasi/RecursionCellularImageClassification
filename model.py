@@ -41,7 +41,7 @@ class DNN:
         #-------------------------------------------------------------------------------------
         
         # 1)  
-        convLyr_1_conv = conv2d (self.data, self.params_w['w1'], self.params_b['b1'])
+        convLyr_1_conv = conv2d (self.x, self.params_w['w1'], self.params_b['b1'])
         convLyr_1_relu = tf.nn.relu(convLyr_1_conv) 
         convLyr_1_pool = maxpool2d(convLyr_1_relu)
         
@@ -69,7 +69,7 @@ class DNN:
         fcLyr_1 = tf.reshape(convLyr_5_pool, [-1, self.params_w['w6'].get_shape().as_list()[0]])
         fcLyr_1 = tf.add(tf.matmul(fcLyr_1, self.params_w['w6']), self.params_b['b6'])
         fcLyr_1 = tf.nn.relu(fcLyr_1)
-        fcLyr_1 = tf.nn.dropout(fcLyr_1, self.keepProb)
+        fcLyr_1 = tf.nn.dropout(fcLyr_1, self.keep_prob)
         
         netOut = tf.add(tf.matmul(fcLyr_1, self.params_w['w7']), self.params_b['w7'])
         
@@ -78,7 +78,7 @@ class DNN:
     #----------------------------------------------------------------------------------------------------------------------
     
     def loss_function(self):
-        return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.score, self.label))    
+        return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.score, self.y))    
     
     #----------------------------------------------------------------------------------------------------------------------
     
@@ -88,17 +88,17 @@ class DNN:
     #----------------------------------------------------------------------------------------------------------------------
     
     def accuracy_function(self):
-        correct_pred = tf.equal(tf.argmax(self.score,1), tf.argmax(self.label,1))
+        correct_pred = tf.equal(tf.argmax(self.score,1), tf.argmax(self.y,1))
         return(tf.reduce_mean(tf.cast(correct_pred, tf.float32)))   
         
     #----------------------------------------------------------------------------------------------------------------------
     
-    def __init__(self, input_shapex, data, label, keepProb): 
+    def __init__(self, input_shape, x, y, keep_prob): 
         self.input_shape  = input_shape 
-        self.data         = data
-        self.label        = label
+        self.x            = x
+        self.y            = y
         self.lr           = lr 
-        self.keepProb     = keepProb
+        self.keep_prob     = keep_prob
 
         [self.params_w, self.params_b] = DNN.parameters(self)   
         self.score                     = DNN.score(self)   
