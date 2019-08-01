@@ -12,8 +12,8 @@ class Model:
                     'w3'   : tf.Variable(tf.truncated_normal([3, 3, 16, 16], stddev=0.1)),
                     'w4'   : tf.Variable(tf.truncated_normal([3, 3, 16, 32], stddev=0.1)),
                     'w5'   : tf.Variable(tf.truncated_normal([3, 3, 32, 64], stddev=0.1)),
-                    # 'w6'   : tf.Variable(tf.truncated_normal([64*4*4, 128],  stddev=0.1)),  # for 128
-                    'w6'   : tf.Variable(tf.truncated_normal([64*2*2, 128],  stddev=0.1)),   # for 64
+                    'w6'   : tf.Variable(tf.truncated_normal([64*4*4, 128],  stddev=0.1)),  # for 128
+                    # 'w6'   : tf.Variable(tf.truncated_normal([64*2*2, 128],  stddev=0.1)),   # for 64
                     'w7'   : tf.Variable(tf.truncated_normal([128, 1108],    stddev=0.1))                    
                    }
         params_b = {
@@ -27,6 +27,7 @@ class Model:
                    }
     
         return params_w, params_b
+        
     #----------------------------------------------------------------------------------------------------------------------
     
     def score(self): 
@@ -87,6 +88,7 @@ class Model:
     #----------------------------------------------------------------------------------------------------------------------
     
     def loss_function(self):
+        ## TODO: add focal loss 
         return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.score, labels=self.y))    
     
     #----------------------------------------------------------------------------------------------------------------------
@@ -102,6 +104,15 @@ class Model:
         
     #----------------------------------------------------------------------------------------------------------------------
     
+    def get_summaries(self):
+        tf.summary.scalar("loss", self.loss ) 
+        tf.summary.scalar("accuracy", self.accuracy) 
+        merged_summary_op = tf.summary.merge_all()
+        
+        return merged_summary_op 
+        
+    #----------------------------------------------------------------------------------------------------------------------
+    
     def __init__(self, input_shape, x, y, lr, keep_prob): 
         self.input_shape  = input_shape 
         self.x            = x
@@ -113,7 +124,8 @@ class Model:
         self.score                     = Model.score(self)   
         self.loss                      = Model.loss_function(self)   
         self.optimizer                 = Model.optimizer(self)   
-        self.accuracy                  = Model.accuracy_function(self)   
+        self.accuracy                  = Model.accuracy_function(self)  
+        self.sum                       = Model.get_summaries(self) 
         
     #----------------------------------------------------------------------------------------------------------------------
     
