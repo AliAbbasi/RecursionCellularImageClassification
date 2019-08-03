@@ -4,24 +4,25 @@ import datetime
 import tensorflow as tf
 from functools import reduce
 import numpy as np
+import os
 
 #----------------------------------------------------------------------------------------------------------------------
 
 ## basic model parameters as external flags.
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_float  ('learning_rate', 0.0001,                                       "Initial learning rate.")
+flags.DEFINE_float  ('learning_rate', 0.000007,                                       "Initial learning rate.")
 flags.DEFINE_float  ('dropout',       0.5,                                          "Dropout probability.")
-flags.DEFINE_integer('max_steps',     1000*1000,                                    "Number of steps to run trainer.") 
-flags.DEFINE_integer('batch_size',    32,                                           "Batch size. Must divide evenly into the dataset sizes.") 
+flags.DEFINE_integer('max_steps',     1000*10000,                                    "Number of steps to run trainer.") 
+flags.DEFINE_integer('batch_size',    64,                                           "Batch size. Must divide evenly into the dataset sizes.") 
 flags.DEFINE_string ('train_path',    "I:\\Cellular\\saved_npy_data\\train\\",      "train data path")
 flags.DEFINE_string ('valid_path',    "I:\\Cellular\\saved_npy_data\\validation\\", "validation data path")
-flags.DEFINE_integer('input_size0',   128,                                           "input data shape")
-flags.DEFINE_integer('input_size1',   128,                                           "input data shape")
+flags.DEFINE_integer('input_size0',   64,                                           "input data shape")
+flags.DEFINE_integer('input_size1',   64,                                           "input data shape")
 flags.DEFINE_integer('input_size2',   6,                                            "input data shape")
 flags.DEFINE_integer('output_size',   1108,                                         "Number of classes")
-flags.DEFINE_boolean('restore',       False,                                        "restore saved weights")
-flags.DEFINE_string ('weights',       "trained_weights_0",                          "restore saved weights")
+flags.DEFINE_boolean('restore',       True,                                        "restore saved weights")
+flags.DEFINE_string ('weights',       "trained_weights_990000.meta",                          "restore saved weights")
 flags.DEFINE_boolean('train',         True,                                         "train of test phase")
 flags.DEFINE_string ('directory',     "saved_weights\\",                            "the directory for save weights" )
 flags.DEFINE_string ('logs',          "logs\\",                                     "the directory for save weights" )
@@ -91,7 +92,7 @@ def main(_):
                     sess.run([deep_model.optimizer], feed_dict={x: x_batch, y: y_batch, keep_prob: FLAGS.dropout})  
                 
                 # -------------- prints --------------
-                if step%500 == 0: 
+                if step%100 == 0: 
                     ## train loss and accuracy
                     train_loss, train_accuracy, train_summary = sess.run([deep_model.loss, deep_model.accuracy, deep_model.sum], feed_dict={x: x_batch, y: y_batch, keep_prob: 1.0}) 
                     
