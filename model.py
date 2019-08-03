@@ -7,22 +7,22 @@ class Model:
     
     def parameters(self):
         params_w = {
-                    'w1'   : tf.Variable(tf.truncated_normal([3, 3, self.input_shape[2], 8], stddev=0.1)),
-                    'w2'   : tf.Variable(tf.truncated_normal([3, 3, 8, 16],  stddev=0.1)),
-                    'w3'   : tf.Variable(tf.truncated_normal([3, 3, 16, 16], stddev=0.1)),
-                    'w4'   : tf.Variable(tf.truncated_normal([3, 3, 16, 32], stddev=0.1)),
-                    'w5'   : tf.Variable(tf.truncated_normal([3, 3, 32, 64], stddev=0.1)),
-                    'w6'   : tf.Variable(tf.truncated_normal([64*4*4, 128],  stddev=0.1)),  # for 128
-                    # 'w6'   : tf.Variable(tf.truncated_normal([64*2*2, 128],  stddev=0.1)),   # for 64
-                    'w7'   : tf.Variable(tf.truncated_normal([128, 1108],    stddev=0.1))                    
+                    'w1'   : tf.Variable(tf.truncated_normal([3, 3, self.input_shape[2],  8], stddev=0.1)),
+                    'w2'   : tf.Variable(tf.truncated_normal([3, 3, 8,                   16],  stddev=0.1)),
+                    'w3'   : tf.Variable(tf.truncated_normal([3, 3, 16,                  32], stddev=0.1)),
+                    'w4'   : tf.Variable(tf.truncated_normal([3, 3, 32,                  64], stddev=0.1)),
+                    'w5'   : tf.Variable(tf.truncated_normal([3, 3, 64,                 128], stddev=0.1)),
+                    # 'w6'   : tf.Variable(tf.truncated_normal([128*4*4,                256],  stddev=0.1)),  # for 128
+                    'w6'   : tf.Variable(tf.truncated_normal([128*2*2,                  256],  stddev=0.1)),   # for 64
+                    'w7'   : tf.Variable(tf.truncated_normal([256,                     1108],    stddev=0.1))                    
                    }
         params_b = {
-                    'b1'   : tf.Variable(tf.truncated_normal([8],    stddev=0.1)),     
-                    'b2'   : tf.Variable(tf.truncated_normal([16],   stddev=0.1)),     
-                    'b3'   : tf.Variable(tf.truncated_normal([16],   stddev=0.1)),     
-                    'b4'   : tf.Variable(tf.truncated_normal([32],   stddev=0.1)),     
-                    'b5'   : tf.Variable(tf.truncated_normal([64],   stddev=0.1)),     
-                    'b6'   : tf.Variable(tf.truncated_normal([128],  stddev=0.1)),     
+                    'b1'   : tf.Variable(tf.truncated_normal([8   ],    stddev=0.1)),     
+                    'b2'   : tf.Variable(tf.truncated_normal([16  ],   stddev=0.1)),     
+                    'b3'   : tf.Variable(tf.truncated_normal([32  ],   stddev=0.1)),     
+                    'b4'   : tf.Variable(tf.truncated_normal([64  ],   stddev=0.1)),     
+                    'b5'   : tf.Variable(tf.truncated_normal([128 ],   stddev=0.1)),     
+                    'b6'   : tf.Variable(tf.truncated_normal([256 ],  stddev=0.1)),     
                     'b7'   : tf.Variable(tf.truncated_normal([1108], stddev=0.1))
                    }
     
@@ -64,12 +64,14 @@ class Model:
         # 4
         convLyr_4_conv = conv2d(convLyr_3_pool, self.params_w['w4'], self.params_b['b4'])
         convLyr_4_relu = tf.nn.relu(convLyr_4_conv)
+        convLyr_4_relu = tf.nn.dropout(convLyr_4_relu, self.keep_prob)
         convLyr_4_pool =  maxpool2d(convLyr_4_relu)
         print (convLyr_4_pool.get_shape())
         
         # 5
         convLyr_5_conv = conv2d(convLyr_4_pool, self.params_w['w5'], self.params_b['b5'])
         convLyr_5_relu = tf.nn.relu(convLyr_5_conv)
+        convLyr_5_relu = tf.nn.dropout(convLyr_5_relu, self.keep_prob)
         convLyr_5_pool =  maxpool2d(convLyr_5_relu)
         print (convLyr_5_pool.get_shape())
         
@@ -89,6 +91,9 @@ class Model:
     
     def loss_function(self):
         ## TODO: add focal loss 
+        ## increase capacity
+        ## add residual blocks
+        
         return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.score, labels=self.y))    
     
     #----------------------------------------------------------------------------------------------------------------------
