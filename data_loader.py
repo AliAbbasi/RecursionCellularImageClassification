@@ -2,7 +2,9 @@ import keras
 import numpy as np
 import random
 import time
-from numba import jit, prange
+from numba import jit, prange 
+import cv2
+from skimage import transform
 
 #----------------------------------------------------------------------------------------------------------------------
 
@@ -30,8 +32,8 @@ def load_data_and_labels(train_path, valid_path, input_size):
     valid_label = keras.utils.to_categorical(valid_label, 1108)
     
     ## normalize the data
-    train_data = train_data/255.
-    valid_data = valid_data/255. 
+    ## train_data = train_data/255.
+    ## valid_data = valid_data/255. 
     
     return train_data, train_label, valid_data, valid_label
     
@@ -54,22 +56,24 @@ def get_batch_data(data, label, batch_size):
     for i in prange(batch_size):   
         cur_x, cur_y = get_a_random_data(data, label)
         
-        ## augment the data with probability of 2/3
-        aug_flag = random.randint(0, 2)
-        if aug_flag:
-            cur_x = apply_augmentation(cur_x)
-            
-        ## mixup the data with probability of 2/3
-        mixup_flag = random.randint(0, 2)
-        if mixup_flag:
-            x2, y2 = get_a_random_data(data, label)
-            cur_x, cur_y = mix_up(cur_x, x2, cur_y, y2)
-            
+        ## augment the data with probability of 3/4
+        aug_type = random.randint(-1, 17)
+        if aug_type > -1:
+            ## mixup
+            if aug_type == 0: 
+                x2, y2 = get_a_random_data(data, label)
+                cur_x, cur_y = mix_up(cur_x, x2, cur_y, y2)
+            ## augmentation
+            else:
+                cur_x = apply_augmentation(cur_x, aug_type)  
+                
         x.append(cur_x) 
         y.append(cur_y)  
     
     x = np.asarray(x)
     y = np.asarray(y)
+    
+    x = x/255. 
 
     # print (time.time() - s)
     return x, y 
@@ -84,18 +88,7 @@ def mix_up(x1, x2, y1, y2):
     
 #----------------------------------------------------------------------------------------------------------------------
 
-def apply_augmentation(x):
-
-    ## TODO:  
-    ## 0 mixup 
-    ## 1 noise s&p
-    ## 2 blur
-    ## 3 4 5 rotations 90 180 270
-    ## 6 7 flips horiz, verti.
-    ## 8 random erasing   ??
-    
-    # s = time.time()
-    aug_type = random.randint(0, 8)
+def apply_augmentation(x, aug_type): 
     
     ## noise s&p
     if aug_type == 1:  
@@ -146,11 +139,126 @@ def apply_augmentation(x):
     ## vertical flip
     elif aug_type == 7:
         x = np.flipud(x)
+        
+    ## rescale and crop (on 1 channel)
+    elif aug_type == 8:
+        random_channel = random.randint(0, 5)
+        a_chan_image = (x[:,:,random_channel]).astype(np.uint8)
+        
+        a_chan_image = cv2.resize(a_chan_image, (x.shape[0]*2, x.shape[0]*2))
+        random_x = random.randint(0, x.shape[0])
+        random_y = random.randint(0, x.shape[0])
+        a_chan_image = a_chan_image[random_x:random_x+x.shape[0], random_y:random_y+x.shape[0]]
+        x[:,:,random_channel] = a_chan_image
+        
+    ## translate right (on 1 channel)
+    elif aug_type == 9:
+        random_channel = random.randint(0, 5)
+        a_chan_image = (x[:,:,random_channel]).astype(np.uint8)
+        
+        random_trans_value = random.randint(0, x.shape[0] // 6)
+        
+        canvas = np.zeros_like(a_chan_image)
+        canvas[random_trans_value:, :] = a_chan_image[:x.shape[0]-random_trans_value, :]
+        x[:,:,random_channel] = canvas
     
+    ## translate left (on 1 channel)
+    elif aug_type == 10: 
+        random_channel = random.randint(0, 5)
+        a_chan_image = (x[:,:,random_channel]).astype(np.uint8)
+        
+        random_trans_value = random.randint(0, x.shape[0] // 6)
+        
+        canvas = np.zeros_like(a_chan_image)
+        canvas[:x.shape[0]-random_trans_value, :] = a_chan_image[random_trans_value:, :]
+        x[:,:,random_channel] = canvas
+        
+    ## translate up (on 1 channel)
+    elif aug_type == 11:
+        random_channel = random.randint(0, 5)
+        a_chan_image = (x[:,:,random_channel]).astype(np.uint8)
+        
+        random_trans_value = random.randint(0, x.shape[0] // 6)
+        
+        canvas = np.zeros_like(a_chan_image)
+        canvas[:, :x.shape[0]-random_trans_value] = a_chan_image[:, random_trans_value:]
+        x[:,:,random_channel] = canvas
+    
+    ## translate down (on 1 channel)
+    elif aug_type == 12:
+        random_channel = random.randint(0, 5)
+        a_chan_image = (x[:,:,random_channel]).astype(np.uint8)
+        
+        random_trans_value = random.randint(0, x.shape[0] // 6)
+        
+        canvas = np.zeros_like(a_chan_image)
+        canvas[:, random_trans_value:] = a_chan_image[:, :x.shape[0]-random_trans_value]
+        x[:,:,random_channel] = canvas
+    
+    ## rotate (on 1 channel)
+    elif aug_type == 13:
+        random_channel = random.randint(0, 5)
+        a_chan_image = (x[:,:,random_channel]).astype(np.uint8)
+        
+        a_chan_image = transform.rotate(a_chan_image, random.randint(-10, 10))
+        x[:,:,random_channel] = a_chan_image
+        
+    ## shearing (on 1 channel)
+    elif aug_type == 14:  
+        random_channel = random.randint(0, 5)
+        a_chan_image = (x[:,:,random_channel]).astype(np.uint8)
+        
+        afine_tf = transform.AffineTransform(shear=0.2) 
+        a_chan_image = transform.warp(a_chan_image, inverse_map=afine_tf)
+        x[:,:,random_channel] = a_chan_image
+    
+    ## poisson
+    elif aug_type == 15: 
+        x = x.astype(np.uint8)
+        vals = len(np.unique(x))
+        vals = 2 ** np.ceil(np.log2(vals))
+        x = np.random.poisson(x * vals) / float(vals) 
+    
+    ## speckle
+    elif aug_type == 16: 
+        row,col,chan = x.shape
+        gauss = np.random.randn(row, col,chan)
+        gauss = gauss.reshape(row,col,chan)        
+        x = x + x * gauss  
+        
+    ## remove some part of data (one channel)
+    elif aug_type == 17:
+        random_channel = random.randint(0, 5)
+        a_chan_image = (x[:,:,random_channel]).astype(np.uint8)
+        
+        rect_size = x.shape[0] // 6
+        
+        rand_x, rand_y = random.randint(0, x.shape[0]-rect_size-1), random.randint(0, x.shape[0]-rect_size-1)
+        a_chan_image[rand_x:rand_x+rect_size, rand_y:rand_y+rect_size] = 0
+        x[:,:,random_channel] = a_chan_image
+        
     else:
         pass
         
-    # print (time.time() - s)
+    ## TODO:  
+    ## 1 noise s&p
+    ## 2 blur
+    ## 3 4 5 rotations 90 180 270
+    ## 6 7 flips horiz, verti.  
+    ## 8 scale  
+    ## 9, 10, 11, 12 translate     
+    ## 13 rotate 
+    ## 14 shear
+    ## 15 poisson
+    ## 16 speckle
+    ## 17 remove some part of data
+    
+    ## mixed augmentaion is also possible
+   
+    
+    ## apply on 1, 2, 3, or all chennels 
+    ## TODO: seperate the augmentation class and, write each augmentation as a function
+    ## TODO: visualize all  augmented images to check the result of them
     
     return x 
     
