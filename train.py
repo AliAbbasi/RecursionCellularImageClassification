@@ -11,31 +11,23 @@ import os
 ## basic model parameters as external flags.
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_float  ('learning_rate', 0.000007,                                       "Initial learning rate.")
+flags.DEFINE_float  ('learning_rate', 0.00001,                                      "Initial learning rate.")
 flags.DEFINE_float  ('dropout',       0.5,                                          "Dropout probability.")
-flags.DEFINE_integer('max_steps',     1000*10000,                                    "Number of steps to run trainer.") 
+flags.DEFINE_integer('max_steps',     1000*10000,                                   "Number of steps to run trainer.") 
 flags.DEFINE_integer('batch_size',    64,                                           "Batch size. Must divide evenly into the dataset sizes.") 
 flags.DEFINE_string ('train_path',    "I:\\Cellular\\saved_npy_data\\train\\",      "train data path")
 flags.DEFINE_string ('valid_path',    "I:\\Cellular\\saved_npy_data\\validation\\", "validation data path")
-flags.DEFINE_integer('input_size0',   64,                                           "input data shape")
-flags.DEFINE_integer('input_size1',   64,                                           "input data shape")
+flags.DEFINE_integer('input_size0',   128,                                          "input data shape")
+flags.DEFINE_integer('input_size1',   128,                                          "input data shape")
 flags.DEFINE_integer('input_size2',   6,                                            "input data shape")
 flags.DEFINE_integer('output_size',   1108,                                         "Number of classes")
-flags.DEFINE_boolean('restore',       True,                                        "restore saved weights")
-flags.DEFINE_string ('weights',       "trained_weights_990000.meta",                          "restore saved weights")
+flags.DEFINE_boolean('restore',       False,                                        "restore saved weights")
+flags.DEFINE_string ('weights',       "trained_weights_990000.meta",                "restore saved weights")
 flags.DEFINE_boolean('train',         True,                                         "train of test phase")
 flags.DEFINE_string ('directory',     "saved_weights\\",                            "the directory for save weights" )
 flags.DEFINE_string ('logs',          "logs\\",                                     "the directory for save weights" )
 
-#----------------------------------------------------------------------------------------------------------------------
-
-def count_params():
-    "print number of trainable variables"
-    size = lambda v: reduce(lambda x, y: x*y, v.get_shape().as_list())
-    n = sum(size(v) for v in tf.trainable_variables())
-    print ("Model size: %dK" % (n/1000,))
-    
-#----------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------- 
 
 def main(_): 
     train_data, train_label, valid_data, valid_label = data_loader.load_data_and_labels(FLAGS.train_path, FLAGS.valid_path, [FLAGS.input_size0, FLAGS.input_size1, FLAGS.input_size2])
@@ -50,7 +42,11 @@ def main(_):
         saver    = tf.train.Saver() 
         
         ## shows the model parameters number
-        count_params()
+        size = lambda v: reduce(lambda x, y: x*y, v.get_shape().as_list())
+        n = sum(size(v) for v in tf.trainable_variables())
+        print ("\r\n------------------------\r\n")
+        print ("Model size: %dK" % (n/1000,))
+        print ("\r\n------------------------\r\n")
         
         config = tf.ConfigProto() 
         config.gpu_options.allow_growth = True  
@@ -65,7 +61,7 @@ def main(_):
                 if os.path.exists(FLAGS.directory + FLAGS.weights ): 
                     new_saver = tf.train.import_meta_graph(FLAGS.directory + FLAGS.weights)
                     new_saver.restore(sess, tf.train.latest_checkpoint(FLAGS.directory))  
-                    print ("\r\n------------ Trained weights restored. ------------")
+                    print ("\r\n------------ Trained weights restored. ------------\r\n")
             
             # prevent to add extra node to graph during training        
             tf.get_default_graph().finalize()  
@@ -92,7 +88,7 @@ def main(_):
                     sess.run([deep_model.optimizer], feed_dict={x: x_batch, y: y_batch, keep_prob: FLAGS.dropout})  
                 
                 # -------------- prints --------------
-                if step%100 == 0: 
+                if step%10 == 0: 
                     ## train loss and accuracy
                     train_loss, train_accuracy, train_summary = sess.run([deep_model.loss, deep_model.accuracy, deep_model.sum], feed_dict={x: x_batch, y: y_batch, keep_prob: 1.0}) 
                     
