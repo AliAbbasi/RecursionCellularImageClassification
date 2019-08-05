@@ -38,34 +38,41 @@ def load_data_and_labels(train_path, valid_path, input_size):
 
 def get_a_random_data(data, label):
     rand_index = random.randint(0, data.shape[0]-1) 
-    x = data[rand_index]
-    y = label[rand_index]
+    x = data[rand_index].copy()
+    y = label[rand_index].copy()
     
     return x, y
 
 #----------------------------------------------------------------------------------------------------------------------
 
-@jit(parallel=True)
+# @jit(parallel=True)
 def get_batch_data(data, label, batch_size):
     x, y = [], []  
     
-    # s = time.time()
-    # counter = 0
-    for i in prange(batch_size):   
-        cur_x, cur_y = get_a_random_data(data, label)
+    # for i in prange(batch_size):   
+    for i in range(batch_size):   
+        print ("i: ", i)
+        # cur_x, cur_y = get_a_random_data(data, label)
         
-        ## augmentation
-        aug_type = random.randint(-1, 19) 
-        if aug_type > -1:
-            ## mixup
-            if aug_type == 0: 
-                # counter += 1 
-                x2, y2 = get_a_random_data(data, label)
-                cur_x, cur_y = mix_up(cur_x, x2, cur_y, y2)
-            ## other augmentations
-            else:
-                cur_x = apply_augmentation(cur_x, aug_type)  
-                
+        cur_x =  data[1000].copy()
+        cur_y = label[1000 ].copy()
+        
+        
+        # augmentation
+        # aug_type = random.randint(-1, 19) 
+        aug_type = random.randint(1, 19) 
+        ## # aug_type = random.randint(-1, 0) 
+        ## # if aug_type > -1:
+        ##     ## mixup
+        ##     # if aug_type == 0:  
+        ##         # x2, y2 = get_a_random_data(data, label)
+        ##         # x2, y2 = data[i+1, :, :, :], label[i+1 ]
+        ##         # cur_x, cur_y = mix_up(cur_x, x2, cur_y, y2)
+        ##     ## other augmentations
+        ##     # else:
+        ##         # cur_x = apply_augmentation(cur_x, aug_type)  
+        cur_x = apply_augmentation(cur_x, aug_type)  
+        
         x.append(cur_x) 
         y.append(cur_y)  
     
@@ -89,6 +96,14 @@ def mix_up(x1, x2, y1, y2):
 #----------------------------------------------------------------------------------------------------------------------
 
 def apply_augmentation(x, aug_type): 
+    print ("aug_type", aug_type)
+    for i in range(6):
+        print(i)
+        a_chan_image = ((x[:,:,i]).copy()).astype(np.uint8)
+        cv2.imshow("a_chan_image", a_chan_image)
+        cv2.waitKey()
+        cv2.imwrite("aug_res\\_" +str(0) + "_" + str(i) + ".png", a_chan_image ) 
+    print ("--------------------")
     
     ## noise s&p
     if aug_type == 1:  
@@ -259,9 +274,9 @@ def apply_augmentation(x, aug_type):
     else:
         pass
     
-    # for i in range(6):
-        # a_chan_image = (x[:,:,i]).astype(np.uint8)
-        # cv2.imwrite("aug_res\\_" +str(aug_type) + "_" + str(i) + ".png", a_chan_image ) 
+    for i in range(6):
+        a_chan_image = (x[:,:,i]).astype(np.uint8)
+        cv2.imwrite("aug_res\\_" +str(aug_type) + "_" + str(i) + ".png", a_chan_image ) 
      
     # print (aug_type)
     # a =  input("enter here .")
@@ -285,7 +300,11 @@ def apply_augmentation(x, aug_type):
     ## TODO:  
     ## apply on 1, 2, 3, or all chennels 
     ## TODO: seperate the augmentation class and, write each augmentation as a function
-    ## TODO: visualize all augmented images to check the result of them
+    ## TODO: visualize all augmented images to check the result of them, remove the unnecessary ones
+    ##      question 1: why the data are different, while I get same data to show
+    
+    ## (top urgent) TODO >>>>>> train only on one batch of 256 data, and check if it converge or not
+    ##              note down every configuration, steps, loss and accuarcy
     
     return x 
     
