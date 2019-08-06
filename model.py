@@ -201,6 +201,7 @@ class Model:
     
     def optimizer(self):
         return tf.train.AdamOptimizer(learning_rate = self.lr).minimize(self.loss)
+        # return tf.train.GradientDescentOptimizer(learning_rate = self.lr).minimize(self.loss)
         
     #----------------------------------------------------------------------------------------------------------------------
     

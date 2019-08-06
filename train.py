@@ -8,15 +8,13 @@ import os, shutil
 
 #----------------------------------------------------------------------------------------------------------------------
 
-## TODO: train on only one data
-
 ## basic model parameters as external flags.
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_float  ('learning_rate', 0.01,                                      "Initial learning rate.")
+flags.DEFINE_float  ('learning_rate', 0.00001,                                        "Initial learning rate.")
 flags.DEFINE_float  ('dropout',       0.5,                                          "Dropout probability.")
 flags.DEFINE_integer('max_steps',     1000*10000,                                   "Number of steps to run trainer.") 
-flags.DEFINE_integer('batch_size',    32,                                           "Batch size. Must divide evenly into the dataset sizes.") 
+flags.DEFINE_integer('batch_size',    64,                                           "Batch size. Must divide evenly into the dataset sizes.") 
 flags.DEFINE_string ('train_path',    "I:\\Cellular\\saved_npy_data\\train\\",      "train data path")
 flags.DEFINE_string ('valid_path',    "I:\\Cellular\\saved_npy_data\\validation\\", "validation data path")
 flags.DEFINE_integer('input_size0',   128,                                          "input data shape")
@@ -84,18 +82,18 @@ def main(_):
             ## main training loop
             while(step < FLAGS.max_steps):    
             
-                x_batch, y_batch = data_loader.get_batch_data(train_data, train_label, FLAGS.batch_size)   
+                x_batch, y_batch = data_loader.get_batch_data(train_data, train_label, FLAGS.batch_size, True)   
                 
                 with tf.control_dependencies(extra_update_ops):  
                     sess.run([deep_model.optimizer], feed_dict={x: x_batch, y: y_batch, keep_prob: FLAGS.dropout})  
                 
                     # -------------- prints --------------
-                    if step%1 == 0: 
+                    if step%10 == 0: 
                         ## train loss and accuracy
                         train_loss, train_accuracy, train_summary = sess.run([deep_model.loss, deep_model.accuracy, deep_model.sum], feed_dict={x: x_batch, y: y_batch, keep_prob: 1.0}) 
                         
                         ## validation loss and accuracy
-                        x_batch, y_batch = data_loader.get_batch_data(valid_data, valid_label, FLAGS.batch_size)  
+                        x_batch, y_batch = data_loader.get_batch_data(valid_data, valid_label, FLAGS.batch_size, False)  
                         valid_loss, valid_accuracy, valid_summary = sess.run([deep_model.loss, deep_model.accuracy, deep_model.sum], feed_dict={x: x_batch, y: y_batch, keep_prob: 1.0}) 
                         
                         summary_writer_train.add_summary(train_summary, step) 
