@@ -11,7 +11,7 @@ import os, shutil
 ## basic model parameters as external flags.
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_float  ('learning_rate', 0.00001,                                        "Initial learning rate.")
+flags.DEFINE_float  ('learning_rate', 0.0001,                                        "Initial learning rate.")
 flags.DEFINE_float  ('dropout',       0.5,                                          "Dropout probability.")
 flags.DEFINE_integer('max_steps',     1000*10000,                                   "Number of steps to run trainer.") 
 flags.DEFINE_integer('batch_size',    64,                                           "Batch size. Must divide evenly into the dataset sizes.") 
