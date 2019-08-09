@@ -265,11 +265,13 @@ def apply_augmentation(x, aug_type):
     ## 16 remove some part of data   
     ## 17 hist equalization 
     ## 18 brightness change 
-    ## TODO:: mixed augmentaion is also possible
     
+    ## TODO:: mixed augmentaion is also possible 
     ## TODO:  
     ## apply on 1, 2, 3, or all chennels   
     ## TODO: train with aug type only between 1-11
+    
+    ## TODO: add @jit to all augmentaion functions
     return x 
     
 #----------------------------------------------------------------------------------------------------------------------
