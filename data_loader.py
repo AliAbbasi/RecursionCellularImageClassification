@@ -47,21 +47,19 @@ def get_a_random_data(data, label):
 #----------------------------------------------------------------------------------------------------------------------
 
 @jit(parallel=True)
-def get_batch_data(data, label, batch_size, do_aug):
+def get_batch_data(data, label, batch_size, do_aug=False):
     x, y = [], []  
     
     for i in prange(batch_size):      
         cur_x, cur_y = get_a_random_data(data, label)
+        # cur_x, cur_y =  data[i].copy(), label[i].copy()
         
-        if do_aug:
-            # augmentation
-            aug_type = random.randint(-1, 18)   
-            if aug_type > -1:
-                ## mixup
-                if aug_type == 0:  
+        if do_aug: 
+            aug_type = random.randint(-1, 18)     
+            if aug_type > -1:  
+                if aug_type == 0:   
                     x2,    y2    = get_a_random_data(data, label) 
-                    cur_x, cur_y = augmenter.mix_up(cur_x, x2, cur_y, y2)
-                ## other augmentations
+                    cur_x, cur_y = augmenter.mix_up(cur_x, x2, cur_y, y2) 
                 else:
                     cur_x = augmenter.apply_augmentation(cur_x, aug_type)  
         

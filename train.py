@@ -14,7 +14,7 @@ FLAGS = flags.FLAGS
 flags.DEFINE_float  ('learning_rate', 0.0001,                                        "Initial learning rate.")
 flags.DEFINE_float  ('dropout',       0.5,                                          "Dropout probability.")
 flags.DEFINE_integer('max_steps',     1000*10000,                                   "Number of steps to run trainer.") 
-flags.DEFINE_integer('batch_size',    64,                                           "Batch size. Must divide evenly into the dataset sizes.") 
+flags.DEFINE_integer('batch_size',    512,                                           "Batch size. Must divide evenly into the dataset sizes.") 
 flags.DEFINE_string ('train_path',    "I:\\Cellular\\saved_npy_data\\train\\",      "train data path")
 flags.DEFINE_string ('valid_path',    "I:\\Cellular\\saved_npy_data\\validation\\", "validation data path")
 flags.DEFINE_integer('input_size0',   128,                                          "input data shape")
@@ -26,6 +26,7 @@ flags.DEFINE_string ('weights',       "trained_weights_990000.meta",            
 flags.DEFINE_boolean('train',         True,                                         "train of test phase")
 flags.DEFINE_string ('directory',     "saved_weights\\",                            "the directory for save weights" )
 flags.DEFINE_string ('logs',          "logs\\",                                     "the directory for save weights" )
+flags.DEFINE_boolean ('augmentation',          True,                                   "augmentaion flag" )
 
 #---------------------------------------------------------------------------------------------------------------------- 
 
@@ -70,7 +71,7 @@ def main(_):
             extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             
             # -------------- train phase --------------
-            step         = 0
+            step         = 1
             train_cost   = []
             valid_cost   = []
             train_accu1  = []
@@ -82,19 +83,20 @@ def main(_):
             ## main training loop
             while(step < FLAGS.max_steps):    
             
-                x_batch, y_batch = data_loader.get_batch_data(train_data, train_label, FLAGS.batch_size, True)   
+                x_batch, y_batch = data_loader.get_batch_data(train_data, train_label, FLAGS.batch_size, FLAGS.augmentation)   
                 
                 with tf.control_dependencies(extra_update_ops):  
                     sess.run([deep_model.optimizer], feed_dict={x: x_batch, y: y_batch, keep_prob: FLAGS.dropout})  
                 
                     # -------------- prints --------------
-                    if step%10 == 0: 
+                    if step%2 == 0: 
                         ## train loss and accuracy
                         train_loss, train_accuracy, train_summary = sess.run([deep_model.loss, deep_model.accuracy, deep_model.sum], feed_dict={x: x_batch, y: y_batch, keep_prob: 1.0}) 
                         
                         ## validation loss and accuracy
-                        x_batch, y_batch = data_loader.get_batch_data(valid_data, valid_label, FLAGS.batch_size, False)  
+                        x_batch, y_batch = data_loader.get_batch_data(valid_data, valid_label, FLAGS.batch_size)  
                         valid_loss, valid_accuracy, valid_summary = sess.run([deep_model.loss, deep_model.accuracy, deep_model.sum], feed_dict={x: x_batch, y: y_batch, keep_prob: 1.0}) 
+                        # valid_loss, valid_accuracy =0, 0
                         
                         summary_writer_train.add_summary(train_summary, step) 
                         summary_writer_valid.add_summary(valid_summary, step) 
