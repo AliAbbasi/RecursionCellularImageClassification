@@ -51,8 +51,7 @@ def get_batch_data(data, label, batch_size, do_aug=False):
     x, y = [], []  
     
     for i in prange(batch_size):      
-        cur_x, cur_y = get_a_random_data(data, label)
-        # cur_x, cur_y =  data[i].copy(), label[i].copy()
+        cur_x, cur_y = get_a_random_data(data, label) 
         
         if do_aug: 
             aug_type = random.randint(-1, 18)     
