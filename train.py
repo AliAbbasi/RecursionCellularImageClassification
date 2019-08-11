@@ -22,7 +22,7 @@ flags.DEFINE_integer('input_size1',   128,                                      
 flags.DEFINE_integer('input_size2',   6,                                            "input data shape")
 flags.DEFINE_integer('output_size',   1108,                                         "Number of classes")
 flags.DEFINE_boolean('restore',       True,                                         "restore saved weights")
-flags.DEFINE_string ('weights',       "trained_weights_10000.meta",                 "restore saved weights")
+flags.DEFINE_string ('weights',       "trained_weights_30000.meta",                 "restore saved weights")
 flags.DEFINE_boolean('train',         True,                                         "train of test phase")
 flags.DEFINE_string ('directory',     "saved_weights\\",                            "the directory for save weights" )
 flags.DEFINE_string ('logs',          "logs\\",                                     "the directory for save weights" )
@@ -113,7 +113,7 @@ def main(_):
                     summary_writer_valid.add_summary(valid_summary, step)   
                     
                     # -------------- save weights --------------
-                    if step%10000 == 0: 
+                    if step%5000 == 0: 
                         print ("saving the weights...!")
                         saver.save(sess, FLAGS.directory + 'trained_weights_' + str(step))
                         

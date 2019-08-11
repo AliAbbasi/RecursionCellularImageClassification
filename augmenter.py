@@ -241,28 +241,27 @@ def apply_augmentation(x, aug_type):
     augmentation_functions = [salt_and_pepper, blur, rotate_90, rotate_180, rotate_270, flip_up, flip_right, 
                               remove_some_part, his_equ, brightness, poisson, rescale_and_crop, translate_down, 
                               translate_left, translate_right, translate_up, random_rotate, shearing]
-                              
-    random_augmentaion_function = random.choice(augmentation_functions)
     
-    # print (augmentation_functions.index(random_augmentaion_function))
-    ## first augmentation
+
+    ## first augmentation    
+    random_augmentaion_function = random.choice(augmentation_functions) 
     x = random_augmentaion_function(x)
     
-    # for i in range(6):
-        # a_chan_image = (x[:,:,i]).astype(np.uint8)
-        # cv2.imwrite("aug_res\\_" +str(0) + "_" + str(i) + ".png", a_chan_image ) 
+    ## # for i in range(6):
+    ##     # a_chan_image = (x[:,:,i]).astype(np.uint8)
+    ##     # cv2.imwrite("aug_res\\_" +str(0) + "_" + str(i) + ".png", a_chan_image ) 
     
-    ## second augmentaion with probability 50
+    ## second augmentaion with probability 1/2
     if random.randint(0,1):
         augmentation_functions.remove(random_augmentaion_function)
         random_augmentaion_function = random.choice(augmentation_functions) 
         x = random_augmentaion_function(x)
     
-    # for i in range(6):
-        # a_chan_image = (x[:,:,i]).astype(np.uint8)
-        # cv2.imwrite("aug_res\\_" +str(1) + "_" + str(i) + ".png", a_chan_image )  
-    # print ("--------------------------")
-    # a = input()
+    ## # for i in range(6):
+    ##     # a_chan_image = (x[:,:,i]).astype(np.uint8)
+    ##     # cv2.imwrite("aug_res\\_" +str(1) + "_" + str(i) + ".png", a_chan_image )  
+    ## # print ("--------------------------")
+    ## # a = input()
     
     return x
     
@@ -284,6 +283,7 @@ def apply_augmentation(x, aug_type):
     ## 18 shearing  
     
     ## TODO: should we apply mixup to all data ??
+    ## maybe we should combine the data from both site 1 and 2, and feed it as 12 channels to the network input
     return x 
     
 #----------------------------------------------------------------------------------------------------------------------
