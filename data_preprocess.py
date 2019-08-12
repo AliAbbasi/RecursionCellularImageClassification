@@ -1,7 +1,109 @@
 
 import numpy as np
-import os, cv2
+import os, cv2, sys 
+import numpy as np
+import glob  
+from PIL import Image   
+import pandas as pd 
 
+
+#----------------------------------------------------------------------------------------------------------------------
+
+train_path = 'C:\\Users\\HP\\Downloads\\train\\'
+test_path = 'C:\\Users\\HP\\Downloads\\test\\'
+
+train_np_save_path = "train_np_files\\" 
+train_np_save_label_path = "train_np_files_labels\\" 
+test_np_save_path = "test_np_files\\" 
+
+input_size = (128, 128, 6)
+
+train_data = []
+train_label = []
+test_data = []
+test_label = []
+
+
+experiment_keys   = ['HEPG2', 'HUVEC', 'RPE', 'U2OS']
+experiment_counts = [7750*2,  17688*2, 7753*2, 3324*2]
+
+df = pd.read_csv('train.csv')
+N = df.shape[0] 
+
+print ("The train data processing is started.!")
+for key in range(len(experiment_keys)):
+    
+    index = 0
+    data_container  = np.zeros(shape=(experiment_counts[key], input_size[0], input_size[0], 6), dtype=np.float16)
+    label_container = np.zeros(shape=(experiment_counts[key], 1),                               dtype=np.float16)
+    
+    for i in range(N): 
+        print (df['id_code'][i])
+        
+        experiment = df['experiment'][i]
+        
+        if experiment.split("-")[0] == experiment_keys[key]:
+            plate = df['plate'][i]
+            well = df['well'][i]
+            
+
+            for site in [1, 2]: 
+                image_template = np.zeros(input_size, dtype=np.float16) 
+                
+                for channel in [1,2,3,4,5,6]:
+                    image_path = train_path + str(experiment) + "\\Plate" + str(plate.item()) + "\\" + str(well) + "_s" + str(site) + "_w" + str(channel) + ".png"
+                    image_template[:,:,channel-1] = cv2.resize(cv2.imread(image_path, 0), (128, 128))
+                
+                data_container[index, :,:,:] = image_template.copy()
+                label_container[index] = int(df['sirna'][i])
+                index += 1
+                
+    np.save("train_" + experiment_keys[key] + "_data",  data_container)
+    np.save("train_" + experiment_keys[key] + "_label", label_container)
+    
+
+#----------------------------------------------------------------------------------------------------------------------
+
+experiment_keys   = ['HEPG2', 'HUVEC', 'RPE', 'U2OS']
+experiment_counts = [4429*2,    8846*2,     4417*2,  2205*2]
+
+## process the test data
+df  = pd.read_csv('test.csv') 
+N = df.shape[0]
+
+print ("The test data processing is started.!") 
+for key in range(len(experiment_keys)):
+    
+    index = 0
+    data_container  = np.zeros(shape=(experiment_counts[key], input_size[0], input_size[0], 6), dtype=np.float16)
+    label_container = np.zeros(shape=(experiment_counts[key], 1),                               dtype=np.float16)
+    
+    for i in range(N): 
+        print (df['id_code'][i])
+        
+        experiment = df['experiment'][i]
+        
+        if experiment.split("-")[0] == experiment_keys[key]:
+            plate = df['plate'][i]
+            well = df['well'][i]
+            
+
+            for site in [1, 2]: 
+                image_template = np.zeros(input_size, dtype=np.float16) 
+                
+                for channel in [1,2,3,4,5,6]:
+                    image_path = test_path + str(experiment) + "\\Plate" + str(plate.item()) + "\\" + str(well) + "_s" + str(site) + "_w" + str(channel) + ".png"
+                    image_template[:,:,channel-1] = cv2.resize(cv2.imread(image_path, 0), (128, 128))
+                
+                data_container[index, :,:,:] = image_template.copy() 
+                index += 1
+                
+    np.save("test_" + experiment_keys[key] + "_data", data_container) 
+    
+sys.exit(1)
+
+#----------------------------------------------------------------------------------------------------------------------
+sys.exit(1)
 #----------------------------------------------------------------------------------------------------------------------
 batch_size            = 32
 epochs                = 200
@@ -10,7 +112,6 @@ path_train_input      = 'I:\\Cellular\\saved_npy_data\\train\\'
 path_valid_input      = 'I:\\Cellular\\saved_npy_data\\validation\\'    
 load_model_flag       = False
 load_model_path       = 'weights-improvement-200-0.00.hdf5' 
-
 
 max_sirna_value  = 1107.0
 train_data_count = 63676
