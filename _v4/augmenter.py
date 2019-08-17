@@ -240,7 +240,7 @@ def random_rotate(x):
     
 #----------------------------------------------------------------------------------------------------------------------
 
-def apply_augmentation(x, aug_type): 
+def apply_augmentation(x): 
     augmentation_functions = [salt_and_pepper, blur, rotate_90, rotate_180, rotate_270, flip_up, flip_right, 
                               remove_some_part, his_equ, brightness, poisson, rescale_and_crop, translate_down, 
                               translate_left, translate_right, translate_up, random_rotate, shearing]
@@ -250,40 +250,13 @@ def apply_augmentation(x, aug_type):
     random_augmentaion_function = random.choice(augmentation_functions) 
     x = random_augmentaion_function(x)
     
-    ## # for i in range(6):
-    ##     # a_chan_image = (x[:,:,i]).astype(np.uint8)
-    ##     # cv2.imwrite("aug_res\\_" +str(0) + "_" + str(i) + ".png", a_chan_image ) 
-    
     ## second augmentaion with probability 1/2
     if random.randint(0, 1):
         augmentation_functions.remove(random_augmentaion_function)
         random_augmentaion_function = random.choice(augmentation_functions) 
-        x = random_augmentaion_function(x)
-    
-    ## # for i in range(6):
-    ##     # a_chan_image = (x[:,:,i]).astype(np.uint8)
-    ##     # cv2.imwrite("aug_res\\_" +str(1) + "_" + str(i) + ".png", a_chan_image )  
-    ## # print ("--------------------------")
-    ## # a = input()
-    
-    
-    
-    ## 1 noise s&p 
-    ## 2 blur 
-    ## 3 90 rotate 
-    ## 4 180 rotate 
-    ## 5 270 rotate  
-    ## 6 horizontal flip 
-    ## 7 vertical flip 
-    ## 8 remove some part of data (on random channels)  
-    ## 9 histogram equalization (on random channels)  
-    ## 10 brightness change (on random channels)  
-    ## 11 poisson
-    ## 12 scale and crop 
-    ## 13 14 15 16 translate   
-    ## 17 rotate
-    ## 18 shearing  
-    
+        x = random_augmentaion_function(x) 
+        
+        
     return x 
     
 #----------------------------------------------------------------------------------------------------------------------

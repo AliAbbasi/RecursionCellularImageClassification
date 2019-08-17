@@ -14,7 +14,7 @@ FLAGS = flags.FLAGS
 flags.DEFINE_float  ('learning_rate', 0.001,                                       "Initial learning rate.")
 flags.DEFINE_float  ('dropout',       0.5,                                          "Dropout probability.")
 flags.DEFINE_integer('max_steps',     10*1000*1000,                                 "Number of steps to run trainer.") 
-flags.DEFINE_integer('batch_size',    256,                                          "Batch size. Must divide evenly into the dataset sizes.") 
+flags.DEFINE_integer('batch_size',    512,                                          "Batch size. Must divide evenly into the dataset sizes.") 
 flags.DEFINE_string ('train_path',    "I:\\Cellular\\Recursion_Cellular_Image_Classification\\",      "train data path")
 flags.DEFINE_string ('valid_path',    "I:\\Cellular\\Recursion_Cellular_Image_Classification\\",      "validation data path")
 flags.DEFINE_integer('input_size0',   128,                                          "input data shape")
@@ -22,12 +22,12 @@ flags.DEFINE_integer('input_size1',   128,                                      
 flags.DEFINE_integer('input_size2',   12,                                            "input data shape")
 flags.DEFINE_integer('output_size',   1108,                                         "Number of classes")
 flags.DEFINE_boolean('restore',       False,                                         "restore saved weights")
-flags.DEFINE_string ('weights',       "trained_weights_30000.meta",                 "restore saved weights")
+flags.DEFINE_string ('weights',       "HUVEC_trained_weights_20000.meta",           "restore saved weights")
 flags.DEFINE_boolean('train',         True,                                         "train of test phase")
 flags.DEFINE_string ('directory',     "saved_weights\\",                            "the directory for save weights" )
 flags.DEFINE_string ('logs',          "logs\\",                                     "the directory for save weights" )
-flags.DEFINE_boolean ('augmentation', True,                                         "augmentaion flag" )
-flags.DEFINE_string ('experiment',   "HUVEC",                                         "HEPG2, HUVEC, RPE, U2OS" )
+flags.DEFINE_boolean('augmentation',  True,                                         "augmentaion flag" )
+flags.DEFINE_string ('experiment',    "HUVEC",                                      "HEPG2, HUVEC, RPE, U2OS" )
 
 #---------------------------------------------------------------------------------------------------------------------- 
 

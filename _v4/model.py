@@ -187,13 +187,13 @@ class Model:
             return reduced_fl 
         
         local_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=self.score, labels=self.y))
-        focal_loss = tf.reduce_mean(focal_loss(self.y, tf.nn.softmax(self.score)))
+        # focal_loss = tf.reduce_mean(focal_loss(self.y, tf.nn.softmax(self.score)))
         
         weights_penalty = 0.0
         for w in self.params_w:
             weights_penalty += tf.nn.l2_loss(self.params_w[w]) * 0.001
             
-        return (local_loss + focal_loss + weights_penalty)
+        return (local_loss + weights_penalty)
         
     
     #----------------------------------------------------------------------------------------------------------------------

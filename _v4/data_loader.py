@@ -59,14 +59,14 @@ def get_batch_data(data, label, batch_size, do_aug=False):
     for i in prange(batch_size):      
         cur_x, cur_y = get_a_random_data(data, label) 
         
-        if do_aug: 
-            aug_type = random.randint(-1, 18)     
-            if aug_type > -1:  
-                if aug_type == 0:   
-                    x2,    y2    = get_a_random_data(data, label) 
-                    cur_x, cur_y = augmenter.mix_up(cur_x, x2, cur_y, y2) 
-                else:
-                    cur_x = augmenter.apply_augmentation(cur_x, aug_type)  
+        if do_aug:    
+            ## mixup with probability 3/4
+            if random.randint(0, 3) == 0:   
+                x2,    y2    = get_a_random_data(data, label) 
+                cur_x, cur_y = augmenter.mix_up(cur_x, x2, cur_y, y2) 
+            
+            ## augmentation
+            cur_x = augmenter.apply_augmentation(cur_x)  
         
         x.append(cur_x) 
         y.append(cur_y)  
