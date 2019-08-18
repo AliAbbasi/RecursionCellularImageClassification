@@ -31,8 +31,6 @@ def load_data_and_labels(train_path, valid_path, input_size, experiment):
     
     ## shuffle the data
     combined = list(zip(train_data_12, train_label_12))
-    SEED = 1000
-    random.seed(SEED)
     random.shuffle(combined)
     train_data_12, train_label_12 = zip(*combined)
     train_data_12  = np.asarray(train_data_12)
@@ -54,14 +52,46 @@ def get_a_random_data(data, label):
 
 #----------------------------------------------------------------------------------------------------------------------
 
-@jit(parallel=True)
-def get_batch_data(data, label, batch_size, do_aug=False):
-    x, y = [], []  
+## @jit(parallel=True)
+## def get_batch_data(data, label, batch_size, do_aug=False):
+##     x, y = [], []   
+##     
+##     for i in prange(batch_size):      
+##         cur_x, cur_y = get_a_random_data(data, label) 
+##         
+##         if do_aug:    
+##             ## mixup with probability 3/4
+##             # if random.randint(0, 3) == 0:   
+##             x2,    y2    = get_a_random_data(data, label) 
+##             cur_x, cur_y = augmenter.mix_up(cur_x, x2, cur_y, y2) 
+##             
+##             ## augmentation
+##             cur_x = augmenter.apply_augmentation(cur_x)  
+##         
+##         x.append(cur_x) 
+##         y.append(cur_y)  
+##     
+##     x = np.asarray(x)
+##     y = np.asarray(y)
+##     
+##     x = x/255. 
+##     
+##     return x, y 
     
-    for i in prange(batch_size):      
-        cur_x, cur_y = get_a_random_data(data, label) 
+    
+def get_batch_data(data, label, batch_size, do_aug=False):
+    x, y = [], []   
+    
+    ## get whole data at once
+    x_sub, y_sub = zip(*random.sample(list(zip(data, label)), k=batch_size*2)) 
+    
+    for i in range(0, batch_size, 2):      
+        cur_x, cur_y = x_sub[i], y_sub[i]
         
-        if do_aug:     
+        if do_aug:    
+            ## mixup  
+            cur_x, cur_y = augmenter.mix_up(cur_x, x_sub[i+1], cur_y, y_sub[i+1]) 
+            
             ## augmentation
             cur_x = augmenter.apply_augmentation(cur_x)  
         
