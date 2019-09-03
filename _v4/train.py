@@ -22,7 +22,7 @@ flags.DEFINE_integer('input_size1',   128,                                      
 flags.DEFINE_integer('input_size2',   12,                                            "input data shape")
 flags.DEFINE_integer('output_size',   1108,                                         "Number of classes")
 flags.DEFINE_boolean('restore',       False,                                         "restore saved weights")
-flags.DEFINE_string ('weights',       "HUVEC_trained_weights_20000.meta",           "restore saved weights")
+flags.DEFINE_string ('weights',       "HUVEC_trained_weights_15000.meta",           "restore saved weights")
 flags.DEFINE_boolean('train',         True,                                         "train of test phase")
 flags.DEFINE_string ('directory',     "saved_weights\\",                            "the directory for save weights" )
 flags.DEFINE_string ('logs',          "logs\\",                                     "the directory for save weights" )
@@ -96,7 +96,7 @@ def main(_):
                     # print ("train opt: ", time.time() - s)
                     
                     # -------------- training acc loss  --------------
-                    if step%2 == 0: 
+                    if step%1 == 0: 
                         ## train loss and accuracy
                         # s = time.time()
                         train_loss, train_accuracy, train_summary = sess.run([deep_model.loss, deep_model.accuracy, deep_model.sum], feed_dict={x: x_batch, y: y_batch, keep_prob: 1.0})  
