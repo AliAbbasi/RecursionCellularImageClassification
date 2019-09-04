@@ -84,20 +84,27 @@ def get_batch_data(data, label, batch_size, do_aug=False):
     x, y = [], []   
     
     ## get whole data at once
-    x_sub, y_sub = zip(*random.sample(list(zip(data, label)), k=batch_size*2)) 
+    if do_aug:
+        x_sub, y_sub = zip(*random.sample(list(zip(data, label)), k=batch_size*2))  
+    else:
+        x_sub, y_sub = zip(*random.sample(list(zip(data, label)), k=batch_size)) 
+        x = np.asarray(x_sub)
+        y = np.asarray(y_sub)
+        x = x/255.  
+        return x, y 
     
-    for i in range(0, batch_size, 2):      
-        cur_x, cur_y = x_sub[i], y_sub[i]
-        
-        if do_aug:    
+    if do_aug:    
+        for i in range(0, batch_size, 2):     
+            cur_x, cur_y = x_sub[i], y_sub[i]
+            
             ## mixup  
             cur_x, cur_y = augmenter.mix_up(cur_x, x_sub[i+1], cur_y, y_sub[i+1]) 
             
             ## augmentation
             cur_x = augmenter.apply_augmentation(cur_x)  
-        
-        x.append(cur_x) 
-        y.append(cur_y)  
+            
+            x.append(cur_x) 
+            y.append(cur_y)  
     
     x = np.asarray(x)
     y = np.asarray(y)
