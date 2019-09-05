@@ -5,6 +5,7 @@ import tensorflow as tf
 from functools import reduce
 import numpy as np
 import os, shutil, time
+import h5py
 
 #----------------------------------------------------------------------------------------------------------------------
 
@@ -21,8 +22,8 @@ flags.DEFINE_integer('input_size0',   128,                                      
 flags.DEFINE_integer('input_size1',   128,                                          "input data shape")
 flags.DEFINE_integer('input_size2',   12,                                            "input data shape")
 flags.DEFINE_integer('output_size',   1108,                                         "Number of classes")
-flags.DEFINE_boolean('restore',       False,                                         "restore saved weights")
-flags.DEFINE_string ('weights',       "HUVEC_trained_weights_15000.meta",           "restore saved weights")
+flags.DEFINE_boolean('restore',       True,                                         "restore saved weights")
+flags.DEFINE_string ('weights',       "model_30000.hdf5",                           "restore saved weights")
 flags.DEFINE_boolean('train',         True,                                         "train of test phase")
 flags.DEFINE_string ('directory',     "saved_weights\\",                            "the directory for save weights" )
 flags.DEFINE_string ('logs',          "logs\\",                                     "the directory for save weights" )
@@ -65,10 +66,21 @@ def main(_):
             
             # restore model trained weights
             if FLAGS.restore:
-                if os.path.exists(FLAGS.directory + FLAGS.weights ): 
-                    new_saver = tf.train.import_meta_graph(FLAGS.directory + FLAGS.weights)
-                    new_saver.restore(sess, tf.train.latest_checkpoint(FLAGS.directory))  
-                    print ("\r\n------------ Trained weights restored. ------------\r\n")
+                param_setters = dict()
+                for var in tf.trainable_variables():
+                    placeholder = tf.placeholder(var.dtype, var.shape, var.name.split(':')[0]+'_setter')
+                    param_setters[var.name] = (tf.assign(var, placeholder), placeholder)
+                    
+                with h5py.File(FLAGS.directory + FLAGS.weights, 'r') as f:
+                    for (name, val) in f.items():
+                        name = name.replace(' ', '/')
+                        val = np.array(val)
+                        sess.run(param_setters[name][0], { param_setters[name][1]: val })
+    
+                # if os.path.exists(FLAGS.directory + FLAGS.weights ): 
+                    # new_saver = tf.train.import_meta_graph(FLAGS.directory + FLAGS.weights)
+                    # new_saver.restore(sess, tf.train.latest_checkpoint(FLAGS.directory))  
+                print ("\r\n------------ Trained weights restored. ------------\r\n")
             
             # prevent to add extra node to graph during training        
             tf.get_default_graph().finalize()  
@@ -77,7 +89,7 @@ def main(_):
             extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             
             # -------------- train phase --------------
-            step           = 0 
+            step           = 30000 
             valid_loss     = 0 
             train_loss     = 0 
             valid_accuracy = 0 
@@ -118,9 +130,14 @@ def main(_):
                     summary_writer_valid.add_summary(valid_summary, step)   
                     
                     # -------------- save weights --------------
-                    if step%5000 == 0: 
+                    if step%1000 == 0: 
                         print ("saving the weights...!")
-                        saver.save(sess, FLAGS.directory + FLAGS.experiment + '_trained_weights_' + str(step))
+                        # saver.save(sess, FLAGS.directory + FLAGS.experiment + '_trained_weights_' + str(step))
+                        with h5py.File(FLAGS.directory + 'model_'+str(step)+'.hdf5', 'w') as f:
+                            for var in tf.trainable_variables():
+                                key = var.name.replace('/', ' ')
+                                value = sess.run(var)
+                                f.create_dataset(key, data=value)
                         
                     # --------------------------------------------- 
                     step += 1    
