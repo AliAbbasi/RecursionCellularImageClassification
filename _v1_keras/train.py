@@ -13,11 +13,9 @@ from model import Model
 from keras.callbacks import TensorBoard, Callback
 from keras.models import load_model
 import random, glob, cv2, numpy as np 
-from PIL import Image 
-
+from PIL import Image  
 import augmenter
-from tvtb import TrainValTensorBoard
-
+from tvtb import TrainValTensorBoard 
 import data_loader
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -51,7 +49,7 @@ experiment=     "HUVEC"
 
 
 model_obj = Model(input_size0, input_size1, input_size2) 
-model = model_obj.get_model_resnet() 
+model = model_obj.get_model() 
 
 train, train_labels, val, val_labels = data_loader.load_data_and_labels(train_path, valid_path, [input_size0, input_size1, input_size2], experiment)
 print ("train data size: ",train.shape)
@@ -119,6 +117,4 @@ model.fit_generator(
     epochs=epoch_num,
     validation_data=validation_generator,
     validation_steps=(val.shape[0]) // batch_size,
-    callbacks=callbacks_list)
-
-model.save('model.h5')
+    callbacks=callbacks_list) 
