@@ -1,2 +1,0 @@
-
-resnext blocks
