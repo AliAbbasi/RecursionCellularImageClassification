@@ -1,11 +1,5 @@
 
-#-----------------------------------------------------------------------------------------------------------------
-
-import os
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  
-os.environ["CUDA_VISIBLE_DEVICES"]="0"        
-
-#-----------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------- 
 
 from keras.callbacks import ModelCheckpoint
 from keras.preprocessing.image import ImageDataGenerator
@@ -13,11 +7,8 @@ from model import Model
 from keras.callbacks import TensorBoard, Callback
 from keras.models import load_model
 import random, glob, cv2, numpy as np 
-from PIL import Image 
-
-import augmenter
-from tvtb import TrainValTensorBoard
-
+from PIL import Image  
+import augmenter  
 import data_loader
 
 #-----------------------------------------------------------------------------------------------------------------
@@ -34,8 +25,8 @@ set_session(sess)
 dropout=        0.5                                           
 epoch_num=      1000                               
 batch_size=     256                                           
-train_path=     "I:\\Cellular\\Recursion_Cellular_Image_Classification\\"  
-valid_path=     "I:\\Cellular\\Recursion_Cellular_Image_Classification\\"  
+train_path=     "C:\\"  
+valid_path=     "C:\\"  
 input_size0=    128                                      
 input_size1=    128                                      
 input_size2=    12                                       
@@ -72,6 +63,44 @@ val = (val / 255.)
 # val  = np.asarray(val)
 # val_labels = np.asarray(val_labels)
 
+#-----------------------------------------------------------------------------------------------------------------
+
+class TrainValTensorBoard(TensorBoard):
+    def __init__(self, log_dir='./logs', **kwargs):
+        # Make the original `TensorBoard` log to a subdirectory 'training'
+        training_log_dir = os.path.join(log_dir, 'training')
+        super(TrainValTensorBoard, self).__init__(training_log_dir, **kwargs)
+
+        # Log the validation metrics to a separate subdirectory
+        self.val_log_dir = os.path.join(log_dir, 'validation')
+
+    def set_model(self, model):
+        # Setup writer for validation metrics
+        self.val_writer = tf.summary.FileWriter(self.val_log_dir)
+        super(TrainValTensorBoard, self).set_model(model)
+
+    def on_epoch_end(self, epoch, logs=None):
+        # Pop the validation logs and handle them separately with
+        # `self.val_writer`. Also rename the keys so that they can
+        # be plotted on the same figure with the training metrics
+        logs = logs or {}
+        val_logs = {k.replace('val_', ''): v for k, v in logs.items() if k.startswith('val_')}
+        for name, value in val_logs.items():
+            summary = tf.Summary()
+            summary_value = summary.value.add()
+            summary_value.simple_value = value.item()
+            summary_value.tag = name
+            self.val_writer.add_summary(summary, epoch)
+        self.val_writer.flush()
+
+        # Pass the remaining logs to `TensorBoard.on_epoch_end`
+        logs = {k: v for k, v in logs.items() if not k.startswith('val_')}
+        super(TrainValTensorBoard, self).on_epoch_end(epoch, logs)
+
+    def on_train_end(self, logs=None):
+        super(TrainValTensorBoard, self).on_train_end(logs)
+        self.val_writer.close()
+        
 #-----------------------------------------------------------------------------------------------------------------
 
 def train_image_generator(data, label, batch_size): 
@@ -140,7 +169,7 @@ validation_generator = valid_datagen.flow(
 
 print ("Generators are ready...!")
 
-filepath = "weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
+filepath = "weights-{epoch:02d}.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='auto', period=1)
 
 if not os.path.exists('logs'):
@@ -154,6 +183,4 @@ model.fit_generator(
     epochs=epoch_num,
     validation_data=validation_generator,
     validation_steps=(val.shape[0]) // batch_size,
-    callbacks=callbacks_list)
-
-model.save('model.h5')
+    callbacks=callbacks_list) 

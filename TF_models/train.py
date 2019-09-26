@@ -12,15 +12,15 @@ import h5py
 ## Model parameters as external flags.
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_float  ('learning_rate', 0.001,                                       "Initial learning rate.")
+flags.DEFINE_float  ('learning_rate', 0.001,                                        "Initial learning rate.")
 flags.DEFINE_float  ('dropout',       0.5,                                          "Dropout probability.")
 flags.DEFINE_integer('max_steps',     10*1000*1000,                                 "Number of steps to run trainer.") 
 flags.DEFINE_integer('batch_size',    512,                                          "Batch size. Must divide evenly into the dataset sizes.") 
-flags.DEFINE_string ('train_path',    "I:\\Cellular\\Recursion_Cellular_Image_Classification\\",      "train data path")
-flags.DEFINE_string ('valid_path',    "I:\\Cellular\\Recursion_Cellular_Image_Classification\\",      "validation data path")
+flags.DEFINE_string ('train_path',    "",                                           "train data path")
+flags.DEFINE_string ('valid_path',    "",                                           "validation data path")
 flags.DEFINE_integer('input_size0',   128,                                          "input data shape")
 flags.DEFINE_integer('input_size1',   128,                                          "input data shape")
-flags.DEFINE_integer('input_size2',   12,                                            "input data shape")
+flags.DEFINE_integer('input_size2',   12,                                           "input data shape")
 flags.DEFINE_integer('output_size',   1108,                                         "Number of classes")
 flags.DEFINE_boolean('restore',       True,                                         "restore saved weights")
 flags.DEFINE_string ('weights',       "model_30000.hdf5",                           "restore saved weights")
@@ -75,11 +75,8 @@ def main(_):
                     for (name, val) in f.items():
                         name = name.replace(' ', '/')
                         val = np.array(val)
-                        sess.run(param_setters[name][0], { param_setters[name][1]: val })
-    
-                # if os.path.exists(FLAGS.directory + FLAGS.weights ): 
-                    # new_saver = tf.train.import_meta_graph(FLAGS.directory + FLAGS.weights)
-                    # new_saver.restore(sess, tf.train.latest_checkpoint(FLAGS.directory))  
+                        sess.run(param_setters[name][0], { param_setters[name][1]: val }) 
+                        
                 print ("\r\n------------ Trained weights restored. ------------\r\n")
             
             # prevent to add extra node to graph during training        
@@ -131,8 +128,7 @@ def main(_):
                     
                     # -------------- save weights --------------
                     if step%1000 == 0: 
-                        print ("saving the weights...!")
-                        # saver.save(sess, FLAGS.directory + FLAGS.experiment + '_trained_weights_' + str(step))
+                        print ("saving the weights...!") 
                         with h5py.File(FLAGS.directory + 'model_'+str(step)+'.hdf5', 'w') as f:
                             for var in tf.trainable_variables():
                                 key = var.name.replace('/', ' ')
@@ -140,9 +136,7 @@ def main(_):
                                 f.create_dataset(key, data=value)
                         
                     # --------------------------------------------- 
-                    step += 1    
-                    
-            print(" --- \r\n --- \r\n  Trainig process is done after " + str(FLAGS.max_steps) + " iterations. \r\n --- \r\n ---")
+                    step += 1     
             
 #---------------------------------------------------------------------------------------------------------------------- 
 
